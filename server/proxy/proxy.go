@@ -211,8 +211,12 @@ func (pxy *BaseProxy) startCommonTCPListenersHandler() {
 // HandleUserTCPConnection is used for incoming user TCP connections.
 func (pxy *BaseProxy) handleUserTCPConnection(userConn net.Conn) {
 	xl := xlog.FromContextSafe(pxy.Context())
-	defer userConn.Close()
-
+	//defer userConn.Close()
+	defer func(uc net.Conn) {
+		xl.Info("close a user proxy connection [%s]", uc.RemoteAddr().String())
+		uc.Close()
+	}(userConn)
+	
 	serverCfg := pxy.serverCfg
 	cfg := pxy.configurer.GetBaseConfig()
 	// server plugin hook
